@@ -1,5 +1,5 @@
 === Pushrocket ===
-Contributors: sandeepjainlive
+Contributors: pushrocket,sandeepjainlive
 Tags: push notifications
 Requires at least: 5.0
 Tested up to:6.2.2

@@ -22,19 +22,18 @@ class Send_Notification {
 	 * Init action for push notification.
 	 */
 	public function init() {
-		// add_action( 'wp_after_insert_post', array( $this, 'send_notification_on_publish_without_yoast' ), 10, 4 );
 		if ( class_exists( 'WPSEO_Options' ) ) {
 			add_action( 'wpseo_saved_postdata', array( $this, 'send_notification_on_publish_with_yoast' ), 99 );
 		} else {
 			add_action( 'wp_after_insert_post', array( $this, 'send_notification_on_publish_without_yoast' ), 10, 4 );
 		}
-		add_action( 'wp_ajax_push_rocket_send_notification',array( $this, 'push_rocket_send_notification' ));
+		add_action( 'wp_ajax_push_rocket_send_notification', array( $this, 'push_rocket_send_notification' ) );
 	}
 	/**
 	 * Sends a notification when a post or web story is published with yoast.
 	 */
 	public function send_notification_on_publish_with_yoast() {
-		$id    = isset( $_POST['post_ID'] ) ? sanitize_text_field( wp_unslash( $_POST['post_ID'] ) ) : '';
+		$id   = isset( $_POST['post_ID'] ) ? sanitize_text_field( wp_unslash( $_POST['post_ID'] ) ) : '';
 		$post = get_post( ( $id ) );
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
@@ -154,15 +153,14 @@ class Send_Notification {
 		);
 	}
 	/**
-     * Send Notification on Row Action Click
-     *
-     * @since 1.0.0
-     */
-    public function push_rocket_send_notification()
-    {
-        $id = sanitize_text_field($_POST['post_id']);
-        $this->send_push_notification( $id );
-    }
+	 * Send Notification on Row Action Click
+	 *
+	 * @since 1.0.0
+	 */
+	public function push_rocket_send_notification() {
+		$id = sanitize_text_field( $_POST['post_id'] );
+		$this->send_push_notification( $id );
+	}
 }
 
 new Send_Notification();

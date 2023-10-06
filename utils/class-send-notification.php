@@ -28,6 +28,7 @@ class Send_Notification {
 		} else {
 			add_action( 'wp_after_insert_post', array( $this, 'send_notification_on_publish_without_yoast' ), 10, 4 );
 		}
+		add_action( 'wp_ajax_push_rocket_send_notification',array( $this, 'push_rocket_send_notification' ));
 	}
 	/**
 	 * Sends a notification when a post or web story is published with yoast.
@@ -152,6 +153,16 @@ class Send_Notification {
 			)
 		);
 	}
+	/**
+     * Send Notification on Row Action Click
+     *
+     * @since 1.0.0
+     */
+    public function push_rocket_send_notification()
+    {
+        $id = sanitize_text_field($_POST['post_id']);
+        $this->send_push_notification( $id );
+    }
 }
 
 new Send_Notification();

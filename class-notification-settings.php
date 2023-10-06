@@ -19,6 +19,11 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 			add_action( 'admin_menu', array( $this, 'pushrocket_register_settings' ) );
 			add_action( 'admin_init', array( $this, 'pushrocket_register_setting' ) );
 			add_filter( 'sanitize_option_pushrocket_panel_url', array( $this, 'pushrocket_settings_pre_save' ) );
+			$show_multiple_site = get_transient( 'pushrocket_show_multiple_site' );
+			if ( 'yes' === $show_multiple_site ) {
+				add_action('admin_enqueue_scripts', array( $this, 'enqueue_scripts') );
+				add_filter('post_row_actions', array( $this, 'add_post_row_actions'), 10, 2);
+			}
 		}
 		/**
 		 * Register the Pushrocket settings.
@@ -348,7 +353,36 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 			// Return the value to be saved in the database.
 			return $value;
 		}
+		/**
+     * Add Post Row Actions to the post list
+     *
+     * @since 1.0.3
+     */
+    public function add_post_row_actions($actions, $post)
+    {
+        if ($post->post_type == 'post' or $post->post_type == 'web-story') {
+            $actions['send_notification'] =
+                '<a href="#" class="push_rocket_send_notification" data-post-id="' . $post->ID . '">Send Notification</a>';
+        }
+        return $actions;
+    }
+	/**
+     * Register the JavaScript for the admin area.
+     *
+     * @since    1.0.0
+     */
+    public function enqueue_scripts()
+    {
+        wp_enqueue_script(
+            'push-notifications-by-pushrocket-admin',
+            plugin_dir_url(__FILE__) . 'js/push-notifications-by-pushrocket-admin.js',
+            ['jquery'],
+            1,
+            false
+        );
+    }
 	}
+	
 }
 new Notification_Settings();
 

@@ -37,7 +37,10 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 				'pushrocket_settings', // settings group name.
 				'pushrocket_website_lists', // option name.
 			);
-
+			register_setting(
+				'pushrocket_settings', // settings group name.
+				'pushrocket_api_url', // option name.
+			);
 			register_setting(
 				'pushrocket_settings', // settings group name.
 				'pushrocket_panel_url', // option name.
@@ -91,6 +94,20 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 				array(
 					$this,
 					'pushrocket_panel_url_field_html',
+				),
+				'pushrocket', // page slug.
+				'some_settings_section_id', // section id.
+				array(
+					'label_for' => 'content_type',
+					'class'     => '',
+				)
+			);
+			add_settings_field(
+				'pushrocket_api_url',
+				'API url without /',
+				array(
+					$this,
+					'pushrocket_api_url_field_html',
 				),
 				'pushrocket', // page slug.
 				'some_settings_section_id', // section id.
@@ -192,6 +209,15 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 			);
 		}
 		/**
+		 * Render the HTML field for Pushrocket api url.
+		 */
+		public function pushrocket_api_url_field_html() {
+			printf(
+				'<input type="text" id="pushrocket_api_url" name="pushrocket_api_url" value="%s" />',
+				get_option( 'pushrocket_api_url' )
+			);
+		}
+		/**
 		 * Render the HTML field for Pushrocket username.
 		 */
 		public function pushrocket_username_field_html() {
@@ -245,6 +271,7 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 			$pushrocket_username      = get_option( 'pushrocket_username' );
 			$pushrocket_password      = get_option( 'pushrocket_password' );
 			$pushrocket_website_lists = get_option( 'pushrocket_website_lists' );
+			$pushrocket_api_url       = get_option( 'pushrocket_api_url' );
 			$data_to_send             = array(
 				'WebsiteURL'  => $pushrocket_panel_url,
 				'WebsiteCode' => $pushrocket_website_code,
@@ -253,7 +280,7 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 			);
 			// Perform wp_remote_post with all form values.
 			$response = wp_remote_post(
-				'https://pushrocket.one/api/User/GetWebsiteList',
+				$pushrocket_api_url.'/api/User/GetWebsiteList',
 				array(
 					'body' => $data_to_send, // Pass the form data here.
 				)
@@ -324,9 +351,10 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 				'Password'    => $pushrocket_password,
 			// Add other fields here.
 			);
+			$pushrocket_api_url     = get_option( 'pushrocket_api_url' );
 			// Perform wp_remote_post with all form values.
 			$response = wp_remote_post(
-				'https://pushrocket.one/api/User/GetWebsiteList',
+				$pushrocket_api_url.'/api/User/GetWebsiteList',
 				array(
 					'body' => $data_to_send, // Pass the form data here.
 				)

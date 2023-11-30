@@ -133,6 +133,7 @@ class Send_Notification {
 			$description = apply_filters( 'the_content', $post->post_content );
 		}
 		$img_url      = get_the_post_thumbnail_url( $id, 'large' );
+		$pushrocket_api_url       = get_option( 'pushrocket_api_url' );
 		$data_to_send = array(
 			'WebsiteURL'      => $pushrocket_panel_url,
 			'WebsiteCode'     => $pushrocket_website_code,
@@ -146,7 +147,7 @@ class Send_Notification {
 			'PostType'        => $post_type,
 		);
 		$response     = wp_remote_post(
-			'https://pushrocket.one/api/User/SendNotification',
+			$pushrocket_api_url.'/api/User/SendNotification',
 			array(
 				'body' => $data_to_send, // Pass the data here.
 			)

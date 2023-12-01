@@ -3,8 +3,8 @@
 Plugin Name: Pushrocket
 Description: A plugin for Pushrocket settings.
 Version: 1.0
-Author: Sandeep jain
-Author URI: https://sandeepjain.me/
+Author: pushrocket
+Author URI: https://wordpress.org/support/users/pushrocket/
 */
 // Exit if accessed directly.
 namespace Pushrocket;

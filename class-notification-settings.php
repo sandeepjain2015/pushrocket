@@ -405,7 +405,7 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
             'push-notifications-by-pushrocket-admin',
             plugin_dir_url(__FILE__) . 'js/push-notifications-by-pushrocket-admin.js',
             ['jquery'],
-            1,
+            1.7,
             false
         );
     }

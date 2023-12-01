@@ -152,6 +152,7 @@ class Send_Notification {
 				'body' => $data_to_send, // Pass the data here.
 			)
 		);
+		return $response;
 	}
 	/**
 	 * Send Notification on Row Action Click
@@ -160,8 +161,48 @@ class Send_Notification {
 	 */
 	public function push_rocket_send_notification() {
 		$id = sanitize_text_field( $_POST['post_id'] );
-		$this->send_push_notification( $id );
+		$response = $this->send_push_notification( $id );
+	
+		// Check if $response is a WP_Error
+		if ( is_wp_error( $response ) ) {
+			$return = array(
+				'message' => 'Error in API request.',
+				'data'    => null,
+			);
+			wp_send_json_error( $return );
+			return; // Stop execution to prevent further errors
+		}
+	
+		// Assuming $response is an array
+		if ( isset( $response['body'] ) ) {
+			$body = json_decode( $response['body'] );
+	
+			if ( isset( $body->Status ) && $body->Status === false ) {
+				// Error case
+				$return = array(
+					'message' => isset( $body->Message ) ? $body->Message : 'Something went wrong',
+					'data'    => isset( $body->Data ) ? $body->Data : null,
+				);
+				wp_send_json_error( $return );
+			} else {
+				// Success case
+				$return = array(
+					'message' => isset( $body->Message ) ? $body->Message :'Push notification sent successfully.',
+					'data'    => isset( $body->Data ) ? $body->Data : null,
+				);
+				wp_send_json_success( $return );
+			}
+		} else {
+			// Handle case when 'body' key is not present in the response
+			$return = array(
+				'message' => 'Invalid response from the API.',
+				'data'    => null,
+			);
+			wp_send_json_error( $return );
+		}
 	}
+	
+	
 }
 
 new Send_Notification();

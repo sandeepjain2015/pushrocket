@@ -132,9 +132,9 @@ class Send_Notification {
 			$description = $post->post_content;
 			$description = apply_filters( 'the_content', $post->post_content );
 		}
-		$img_url      = get_the_post_thumbnail_url( $id, 'large' );
-		$pushrocket_api_url       = get_option( 'pushrocket_api_url' );
-		$data_to_send = array(
+		$img_url            = get_the_post_thumbnail_url( $id, 'large' );
+		$pushrocket_api_url = get_option( 'pushrocket_api_url' );
+		$data_to_send       = array(
 			'WebsiteURL'      => $pushrocket_panel_url,
 			'WebsiteCode'     => $pushrocket_website_code,
 			'UserName'        => $pushrocket_username,
@@ -146,8 +146,8 @@ class Send_Notification {
 			'PostURL'         => get_the_permalink( $id ),
 			'PostType'        => $post_type,
 		);
-		$response     = wp_remote_post(
-			$pushrocket_api_url.'/api/User/SendNotification',
+		$response           = wp_remote_post(
+			$pushrocket_api_url . '/api/User/SendNotification',
 			array(
 				'body' => $data_to_send, // Pass the data here.
 			)
@@ -160,49 +160,82 @@ class Send_Notification {
 	 * @since 1.0.0
 	 */
 	public function push_rocket_send_notification() {
-		$id = sanitize_text_field( $_POST['post_id'] );
-		$response = $this->send_push_notification( $id );
-	
-		// Check if $response is a WP_Error
-		if ( is_wp_error( $response ) ) {
-			$return = array(
-				'message' => 'Error in API request.',
-				'data'    => null,
+		$pushrocket_panel_url         = get_option( 'pushrocket_panel_url' );
+			$pushrocket_website_code  = get_option( 'pushrocket_website_code' );
+			$pushrocket_username      = get_option( 'pushrocket_username' );
+			$pushrocket_password      = get_option( 'pushrocket_password' );
+			$pushrocket_website_lists = get_option( 'pushrocket_website_lists' );
+			$pushrocket_api_url       = get_option( 'pushrocket_api_url' );
+			$data_to_send             = array(
+				'WebsiteURL'  => $pushrocket_panel_url,
+				'WebsiteCode' => $pushrocket_website_code,
+				'UserName'    => $pushrocket_username,
+				'Password'    => $pushrocket_password,
+		// Add other fields here.
 			);
-			wp_send_json_error( $return );
-			return; // Stop execution to prevent further errors
-		}
-	
-		// Assuming $response is an array
-		if ( isset( $response['body'] ) ) {
-			$body = json_decode( $response['body'] );
-	
-			if ( isset( $body->Status ) && $body->Status === false ) {
-				// Error case
+			// Perform wp_remote_post with all form values.
+			$response = wp_remote_post(
+				$pushrocket_api_url . '/api/User/GetWebsiteList',
+				array(
+					'body' => $data_to_send, // Pass the form data here.
+				)
+			);
+		if ( is_array( $response ) ) {
+			$response_body    = wp_remote_retrieve_body( $response ); // Response body.
+			$decoded_response = json_decode( $response_body, true );
+			if ( $decoded_response ) {
+				// Now you can work with the JSON data as an associative array.
+				$result_status  = $decoded_response['Status'];
+				$result_message = $decoded_response['Message'];
+				if ( ! $result_status ) {
+
+					$return = array(
+						'message' => $result_message ?? 'Something went wrong',
+					);
+					wp_send_json_error( $return );
+
+				} else {
+					$id                    = sanitize_text_field( $_POST['post_id'] );
+					$response_notification = $this->send_push_notification( $id );
+					// Assuming $response_notification is an array
+					if ( isset( $response_notification['body'] ) ) {
+						$body = json_decode( $response_notification['body'] );
+
+						if ( isset( $body->Status ) && $body->Status === false ) {
+							// Error case
+							$return = array(
+								'message' => isset( $body->Message ) ? $body->Message : 'Something went wrong',
+								'data'    => isset( $body->Data ) ? $body->Data : null,
+							);
+							wp_send_json_error( $return );
+						} else {
+							// Success case
+							$return = array(
+								'message' => isset( $body->Message ) ? $body->Message : 'Push notification sent successfully.',
+								'data'    => isset( $body->Data ) ? $body->Data : null,
+							);
+							wp_send_json_success( $return );
+						}
+					} else {
+						// Handle case when 'body' key is not present in the response
+						$return = array(
+							'message' => 'Invalid response from the API.',
+							'data'    => null,
+						);
+						wp_send_json_error( $return );
+					}
+				}
+			} else {
 				$return = array(
-					'message' => isset( $body->Message ) ? $body->Message : 'Something went wrong',
-					'data'    => isset( $body->Data ) ? $body->Data : null,
+					'message' => 'Something went wrong',
 				);
 				wp_send_json_error( $return );
-			} else {
-				// Success case
-				$return = array(
-					'message' => isset( $body->Message ) ? $body->Message :'Push notification sent successfully.',
-					'data'    => isset( $body->Data ) ? $body->Data : null,
-				);
-				wp_send_json_success( $return );
 			}
-		} else {
-			// Handle case when 'body' key is not present in the response
-			$return = array(
-				'message' => 'Invalid response from the API.',
-				'data'    => null,
-			);
-			wp_send_json_error( $return );
 		}
+
 	}
-	
-	
+
+
 }
 
 new Send_Notification();

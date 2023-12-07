@@ -318,10 +318,10 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 		 */
 		public function pushrocket_content() {
 			echo '<div class="wrap"><h1>';
-			esc_html_e( 'Pushrocket', 'pushrocket_domain' );
+			echo esc_html__( 'Pushrocket', 'pushrocket_domain' );
 			echo '</h1>';
 			echo '<h3>';
-			esc_html_e( 'Send unlimited push notifications to your website/blog users directly from WordPress Dashboard.', 'pushrocket_domain' );
+			echo esc_html__( 'Send unlimited push notifications to your website/blog users directly from WordPress Dashboard.', 'pushrocket_domain' );
 			echo '</h3>
 			 <form method="post" action="options.php" name="pushrocket_settings_data">';
 				wp_nonce_field( 'save_pushrocket_setting', 'pushrocket_nonce' );

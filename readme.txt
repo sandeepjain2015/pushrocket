@@ -2,9 +2,10 @@
 Contributors: pushrocket,sandeepjainlive
 Tags: push notifications
 Requires at least: 5.0
-Tested up to:6.2.2
+Tested up to: 6.4.2
+Stable tag: 1.0.0
 Requires PHP: 5.6
-License: GPL2
+License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
@@ -40,4 +41,4 @@ As this plugin functionality and data totally depends on third party apis. (We c
 
 
 == Changelog ==
-1.0
+1.0.0

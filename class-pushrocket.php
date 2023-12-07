@@ -2,9 +2,11 @@
 /*
 Plugin Name: Pushrocket
 Description: A plugin for Pushrocket settings.
-Version: 1.0
+Version: 1.0.0
 Author: pushrocket
 Author URI: https://wordpress.org/support/users/pushrocket/
+License:    GPL-2.0+
+License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 */
 // Exit if accessed directly.
 namespace Pushrocket;
@@ -35,15 +37,20 @@ class Pushrocket {
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 
 	}
+	/**
+	 * Include plugin files.
+	 *
+	 * @since 1.0.0
+	 */
 	public function includes() {
 		require_once PUSHROCKET_DIR . 'class-notification-settings.php';
 		require_once PUSHROCKET_DIR . 'utils/class-send-notification.php';
 	}
-	 /**
-	  * Admin Notices Here
-	  *
-	  * @since 1.0.0
-	  */
+	/**
+	 * Admin Notices Here
+	 *
+	 * @since 1.0.0
+	 */
 	public function admin_notices() {
 		$error_msg = get_transient( 'pushrocket_error' );
 		if ( $error_msg ) {

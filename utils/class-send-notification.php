@@ -33,11 +33,23 @@ class Send_Notification {
 	 * Sends a notification when a post or web story is published with yoast.
 	 */
 	public function send_notification_on_publish_with_yoast() {
-		$id   = isset( $_POST['post_ID'] ) ? sanitize_text_field( wp_unslash( $_POST['post_ID'] ) ) : '';
-		$post = get_post( ( $id ) );
+		// Nonce verification.
+		$yoast_nonce = isset( $_POST['yoast_free_metabox_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['yoast_free_metabox_nonce'] ) ) : '';
+		if ( ! $yoast_nonce || ! wp_verify_nonce( $yoast_nonce, 'yoast_free_metabox' ) ) {
+			return false;
+		}
+		$id = isset( $_POST['post_ID'] ) ? sanitize_text_field( wp_unslash( $_POST['post_ID'] ) ) : '';
+		// Check if the current user can publish or update the post.
+		if ( ! current_user_can( 'publish_posts' ) ) {
+			return;
+		}
+		if ( empty( $id ) ) {
+			return;
+		}
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
 		}
+		$post               = get_post( ( $id ) );
 		$show_multiple_site = get_transient( 'pushrocket_show_multiple_site' );
 		if ( 'yes' !== $show_multiple_site ) {
 			return;
@@ -160,6 +172,10 @@ class Send_Notification {
 	 * @since 1.0.0
 	 */
 	public function push_rocket_send_notification() {
+		$pushrocket_nonce = isset( $_POST['pushrocket_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['pushrocket_nonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $pushrocket_nonce, 'pushrocket_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Invalid nonce.' ) );
+		}
 		$pushrocket_panel_url         = get_option( 'pushrocket_panel_url' );
 			$pushrocket_website_code  = get_option( 'pushrocket_website_code' );
 			$pushrocket_username      = get_option( 'pushrocket_username' );
@@ -195,21 +211,21 @@ class Send_Notification {
 					wp_send_json_error( $return );
 
 				} else {
-					$id                    = sanitize_text_field( $_POST['post_id'] );
+					$id                    = isset( $_POST['post_id'] ) ? sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) : '';
 					$response_notification = $this->send_push_notification( $id );
-					// Assuming $response_notification is an array
+					// Assuming $response_notification is an array.
 					if ( isset( $response_notification['body'] ) ) {
 						$body = json_decode( $response_notification['body'] );
 
 						if ( isset( $body->Status ) && $body->Status === false ) {
-							// Error case
+							// Error case.
 							$return = array(
 								'message' => isset( $body->Message ) ? $body->Message : 'Something went wrong',
 								'data'    => isset( $body->Data ) ? $body->Data : null,
 							);
 							wp_send_json_error( $return );
 						} else {
-							// Success case
+							// Success case.
 							$return = array(
 								'message' => isset( $body->Message ) ? $body->Message : 'Push notification sent successfully.',
 								'data'    => isset( $body->Data ) ? $body->Data : null,
@@ -217,7 +233,7 @@ class Send_Notification {
 							wp_send_json_success( $return );
 						}
 					} else {
-						// Handle case when 'body' key is not present in the response
+						// Handle case when 'body' key is not present in the response.
 						$return = array(
 							'message' => 'Invalid response from the API.',
 							'data'    => null,

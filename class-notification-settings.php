@@ -21,8 +21,8 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 			add_filter( 'sanitize_option_pushrocket_panel_url', array( $this, 'pushrocket_settings_pre_save' ) );
 			$show_multiple_site = get_transient( 'pushrocket_show_multiple_site' );
 			if ( 'yes' === $show_multiple_site ) {
-				add_action('admin_enqueue_scripts', array( $this, 'enqueue_scripts') );
-				add_filter('post_row_actions', array( $this, 'add_post_row_actions'), 10, 2);
+				add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+				add_filter( 'post_row_actions', array( $this, 'add_post_row_actions' ), 10, 2 );
 			}
 		}
 		/**
@@ -196,7 +196,7 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 			$site_url_without_protocol = str_replace( array( 'http://', 'https://' ), '', $site_url );
 			printf(
 				'<input type="text" id="pushrocket_panel_url" name="pushrocket_panel_url" value="%s" readonly=true />',
-				$site_url_without_protocol
+				esc_attr( $site_url_without_protocol )
 			);
 		}
 		/**
@@ -205,7 +205,7 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 		public function pushrocket_website_code_field_html() {
 			printf(
 				'<input type="text" id="pushrocket_website_code" name="pushrocket_website_code" value="%s" />',
-				get_option( 'pushrocket_website_code' )
+				esc_attr( get_option( 'pushrocket_website_code' ) )
 			);
 		}
 		/**
@@ -214,7 +214,7 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 		public function pushrocket_api_url_field_html() {
 			printf(
 				'<input type="text" id="pushrocket_api_url" name="pushrocket_api_url" value="%s" />',
-				get_option( 'pushrocket_api_url' )
+				esc_attr( get_option( 'pushrocket_api_url' ) )
 			);
 		}
 		/**
@@ -223,7 +223,7 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 		public function pushrocket_username_field_html() {
 			printf(
 				'<input type="text" id="pushrocket_username" name="pushrocket_username" value="%s" />',
-				get_option( 'pushrocket_username' )
+				esc_attr( get_option( 'pushrocket_username' ) )
 			);
 		}
 		/**
@@ -232,7 +232,7 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 		public function pushrocket_password_field_html() {
 			printf(
 				'<input type="password" id="pushrocket_password" name="pushrocket_password" value="%s" />',
-				get_option( 'pushrocket_password' )
+				esc_attr( get_option( 'pushrocket_password' ) )
 			);
 		}
 		/**
@@ -280,7 +280,7 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 			);
 			// Perform wp_remote_post with all form values.
 			$response = wp_remote_post(
-				$pushrocket_api_url.'/api/User/GetWebsiteList',
+				$pushrocket_api_url . '/api/User/GetWebsiteList',
 				array(
 					'body' => $data_to_send, // Pass the form data here.
 				)
@@ -290,9 +290,9 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 				$decoded_response = json_decode( $response_body, true );
 				foreach ( $decoded_response['Data'] as $website_data ) {
 					$item_name = $website_data['WebsiteName'];
-					$item_id   = $website_data['Id'];
-					$checked   = ( ! empty( $pushrocket_website_lists ) && in_array( $item_id, $pushrocket_website_lists ) ) ? ' checked="checked" ' : '';
-					echo '<label><input ' . $checked . " value='$item_id' name='pushrocket_website_lists[]' type='checkbox' /> " . esc_html( $item_name ) . '</label><br />';
+					$item_id   = (string) $website_data['Id'];
+					$checked   = ( ! empty( $pushrocket_website_lists ) && in_array( $item_id, $pushrocket_website_lists, true ) ) ? ' checked="checked" ' : '';
+					echo '<label><input ' . esc_attr( $checked ) . " value='" . esc_attr( $item_id ) . "' name='pushrocket_website_lists[]' type='checkbox' /> " . esc_html( $item_name ) . '</label><br />';
 				}
 			}
 		}
@@ -309,7 +309,7 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 					$this,
 					'pushrocket_content',
 				),
-				plugin_dir_url(__FILE__) . 'images/pushrocket-icon.png',
+				plugin_dir_url( __FILE__ ) . 'images/pushrocket-icon.png',
 				25
 			);
 		}
@@ -317,10 +317,13 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 		 * Display the Pushrocket settings content.
 		 */
 		public function pushrocket_content() {
-			echo '<div class="wrap">
-			<h1>' . __( 'Pushrocket', 'pushrocket_domain' ) . '</h1>
-			<h3>' . __( 'Send unlimited push notifications to your website/blog users directly from WordPress Dashboard.', 'pushrocket_domain' ) . '</h3>
-			<form method="post" action="options.php" name="pushrocket_settings_data">';
+			echo '<div class="wrap"><h1>';
+			esc_html_e( 'Pushrocket', 'pushrocket_domain' );
+			echo '</h1>';
+			echo '<h3>';
+			esc_html_e( 'Send unlimited push notifications to your website/blog users directly from WordPress Dashboard.', 'pushrocket_domain' );
+			echo '</h3>
+			 <form method="post" action="options.php" name="pushrocket_settings_data">';
 				wp_nonce_field( 'save_pushrocket_setting', 'pushrocket_nonce' );
 				settings_fields( 'pushrocket_settings' ); // settings group name.
 				do_settings_sections( 'pushrocket' ); // just a page slug.
@@ -351,10 +354,10 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 				'Password'    => $pushrocket_password,
 			// Add other fields here.
 			);
-			$pushrocket_api_url     = get_option( 'pushrocket_api_url' );
+			$pushrocket_api_url = get_option( 'pushrocket_api_url' );
 			// Perform wp_remote_post with all form values.
 			$response = wp_remote_post(
-				$pushrocket_api_url.'/api/User/GetWebsiteList',
+				$pushrocket_api_url . '/api/User/GetWebsiteList',
 				array(
 					'body' => $data_to_send, // Pass the form data here.
 				)
@@ -382,35 +385,51 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 			return $value;
 		}
 		/**
-     * Add Post Row Actions to the post list
-     *
-     * @since 1.0.3
-     */
-    public function add_post_row_actions($actions, $post)
-    {
-        if ($post->post_type == 'post' or $post->post_type == 'web-story') {
-            $actions['send_notification'] =
-                '<a href="#" class="push_rocket_send_notification" data-post-id="' . $post->ID . '">Send Notification</a>';
-        }
-        return $actions;
-    }
-	/**
-     * Register the JavaScript for the admin area.
-     *
-     * @since    1.0.0
-     */
-    public function enqueue_scripts()
-    {
-        wp_enqueue_script(
-            'push-notifications-by-pushrocket-admin',
-            plugin_dir_url(__FILE__) . 'js/push-notifications-by-pushrocket-admin.js',
-            ['jquery'],
-            1.7,
-            false
-        );
-    }
+		 * Add custom row action to the post list in the admin panel.
+		 *
+		 * This function is hooked into the `post_row_actions` filter to add a custom action link
+		 * to the row actions of individual posts or web stories in the WordPress admin panel.
+		 *
+		 * The custom action is 'Send Notification', and it is added only for posts and web stories.
+		 * Clicking on this action triggers a JavaScript function to send a push notification associated
+		 * with the specific post or web story.
+		 *
+		 * @param array   $actions An array of row action links.
+		 * @param WP_Post $post    The current post object.
+		 *
+		 * @return array Modified array of row action links.
+		 */
+		public function add_post_row_actions( $actions, $post ) {
+			if ( 'post' === $post->post_type || 'web-story' === $post->post_type ) {
+				$actions['send_notification'] =
+				'<a href="#" class="push_rocket_send_notification" data-post-id="' . $post->ID . '">Send Notification</a>';
+			}
+			return $actions;
+		}
+		/**
+		 * Register the JavaScript for the admin area.
+		 *
+		 * @since    1.0.0
+		 */
+		public function enqueue_scripts() {
+			wp_enqueue_script(
+				'push-notifications-by-pushrocket-admin',
+				plugin_dir_url( __FILE__ ) . 'js/push-notifications-by-pushrocket-admin.js',
+				array( 'jquery' ),
+				1.8,
+				false
+			);
+			// Localize the script with the nonce.
+			wp_localize_script(
+				'push-notifications-by-pushrocket-admin',
+				'pushrocket_vars', // The JavaScript object name.
+				array(
+					'nonce' => wp_create_nonce( 'pushrocket_nonce' ), // Create and pass the nonce.
+				)
+			);
+		}
 	}
-	
+
 }
 new Notification_Settings();
 

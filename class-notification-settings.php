@@ -409,9 +409,12 @@ if ( ! class_exists( 'Notification_Settings', false ) ) {
 		/**
 		 * Register the JavaScript for the admin area.
 		 *
-		 * @since    1.0.0
+		 * @param string $hook The current admin page being loaded.
 		 */
-		public function enqueue_scripts() {
+		public function enqueue_scripts( $hook ) {
+			if ( 'edit.php' !== $hook ) {
+				return;
+			}
 			wp_enqueue_script(
 				'push-notifications-by-pushrocket-admin',
 				plugin_dir_url( __FILE__ ) . 'js/push-notifications-by-pushrocket-admin.js',
